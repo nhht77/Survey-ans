@@ -1,38 +1,20 @@
 import React, { Component } from 'react'
-import FormFirstQuestions  from './FormFirstQuestions';
-import FormSecondQuestions  from './FormSecondQuestions';
-import Confirm  from './Confirm';
+import FormQuestions  from './FormQuestions';
+import Button from '@material-ui/core/Button';
+import * as apiCalls from './apiHelper';
+
+import AnswerOpt from './AnswerOpt';
+
 
 class SurveyForm extends Component {
     constructor(props){
         super(props);
             this.state ={
-                step:1,
-                ans1: "",
-                ans2: "",
-                ans3: "",
-                ans4: "",
-                ans5: "",
-                ans6: "",
-                questions: []
+                questions: [],
+                AnswerOpt: [],
+                Answer:[]
             };
     }
-
-//   Next step
-nextStep = () => {
-    const { step } = this.state;
-    this.setState({
-        step: step+1
-    })
-}
-
-//   Prev Step
-prevStep = () => {
-    const { step } = this.state;
-    this.setState({
-        step: step - 1
-    })
-}
 
   // Handle fields change
   handleChange = input => e => {
@@ -41,69 +23,62 @@ prevStep = () => {
 
   componentWillMount(){
       this.loadQuestion();
+      this.loadAnswerOpt();
   }
 
-  loadQuestion = () => {
-    fetch('/questions')
-    .then( res => {
-        if(!res.ok){
-            if(res.status >= 400 && res.status < 500){
-                return res.json().then( data => 
-                    { 
-                        let err = {errorMessage: data.message} 
-                        throw err;
-                    })
-            } else {
-                let err = {errorMessage: 'Server is offline, please try again!'}
-                throw err;
-            }
-        }
-        return res.json();
-    })
-    .then (questions => this.setState({questions}));
+  loadQuestion = async () => {
+   let questions = await apiCalls.getQuestion(); 
+   this.setState({questions});
+  }
+  
+  loadAnswerOpt = async () => {
+    let AnswerOpt = await apiCalls.getAnswerOpt(); 
+    this.setState({AnswerOpt});
+  }
+
+  Submit = () => {
+      console.log(this.state.Answer);
+  }
+  
+  handleSubmit = () => {
+      console.log(this.state.Answer);
   }
 
   render() {
-    const { step } = this.state;
-    const {ans1, ans2, ans3, ans4, ans5, ans6} = this.state;
-    const values = { ans1, ans2, ans3, ans4, ans5, ans6 }
-    switch(step){
-        case 1:
-        return (
-            <FormFirstQuestions
-                nextStep={this.nextStep}
-                handleChange={this.handleChange}
-                values={values}
-            />
-        );
-        case 2:
-        return (
-            <FormSecondQuestions
-            nextStep={this.nextStep}
-            prevStep={this.prevStep}
-            handleChange={this.handleChange}
-            values={values}
-        />
-        );
-        case 3:
-        return (
-            <Confirm
-            nextStep={this.nextStep}
-            prevStep={this.prevStep}
-            values={values}
-        />
-        );
-        case 4:
-        return (
-            <h1>Success</h1>
-        );
+    const {Answer} = this.state;
+    const questions = this.state.questions.map( (q, idx) => {
+        return <div key={idx}> <FormQuestions  {...q}/> 
+                    <AnswerOpt 
+                        questionId={q.id} 
+                        AnswerOption={this.state.AnswerOpt} 
+                        Answer={Answer}    
+                    /> 
+                </div>
+    })
 
-        default:
-        return (
-          <h1>Welcome to Survey</h1>
-        );
-    }
+
+    return (
+    <div>
+    <h1>Survey 1st questions</h1>
+    <form onSubmit={this.handleSubmit}>
+        {questions}
+        <Button variant="contained" 
+              color="primary" 
+              style={styles.button}>
+        Submit
+      </Button>
+    </form>
+    </div>
+    );
   }
+}
+
+const styles = {
+    button: {
+      backgroundColor: '#2196f3',
+      marginTop: 30,
+      marginBottom: 30
+    }
 }
 
 export default SurveyForm
