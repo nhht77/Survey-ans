@@ -6,11 +6,22 @@ import FormControl from '@material-ui/core/FormControl';
 
 class AnswerOpt extends React.Component {
   state = {
-    value: '',
+    Answer:
+      {
+        // AnswerOpt:"",
+        // questionId: 0
+      }
   };
 
   handleChange = event => {
-    this.setState({ value: event.target.value });
+    
+    let Answer = Object.assign({}, this.state.Answer);
+
+    Answer.AnswerOpt = event.target.value;
+    Answer.questionId = this.props.questionId;
+
+    this.setState({Answer})
+    this.props.onSave(Answer);    
   };
 
   render() {
@@ -30,7 +41,7 @@ class AnswerOpt extends React.Component {
         <RadioGroup
           aria-label="position"
           name="position"
-          value={this.state.value}
+          value={this.state.Answer.AnswerOpt}
           onChange={this.handleChange}
           row
         >

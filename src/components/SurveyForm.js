@@ -16,11 +16,6 @@ class SurveyForm extends Component {
             };
     }
 
-  // Handle fields change
-  handleChange = input => e => {
-    this.setState({ [input]: e.target.value });
-  };
-
   componentWillMount(){
       this.loadQuestion();
       this.loadAnswerOpt();
@@ -35,14 +30,21 @@ class SurveyForm extends Component {
     let AnswerOpt = await apiCalls.getAnswerOpt(); 
     this.setState({AnswerOpt});
   }
-
-  Submit = () => {
-      console.log(this.state.Answer);
-  }
   
-  handleSubmit = () => {
-      console.log(this.state.Answer);
+  handleSubmit = (e) => {
+    e.preventDefault();
+      const {Answer} = this.state;
+      Answer.forEach( (val) => apiCalls.registerAnswer(val.AnswerOpt, val.questionId));
   }
+
+  onSave = val => {
+
+    let newAnswer = this.state.Answer.filter( ans => ans.questionId !== val.questionId);
+
+    this.setState(prevState => ({
+      Answer: [...newAnswer, val]
+    }))
+}
 
   render() {
     const {Answer} = this.state;
@@ -51,7 +53,8 @@ class SurveyForm extends Component {
                     <AnswerOpt 
                         questionId={q.id} 
                         AnswerOption={this.state.AnswerOpt} 
-                        Answer={Answer}    
+                        Answer={Answer}  
+                        onSave={this.onSave}  
                     /> 
                 </div>
     })
@@ -62,7 +65,9 @@ class SurveyForm extends Component {
     <h1>Survey 1st questions</h1>
     <form onSubmit={this.handleSubmit}>
         {questions}
-        <Button variant="contained" 
+        <Button 
+              type="submit"
+              variant="contained" 
               color="primary" 
               style={styles.button}>
         Submit
